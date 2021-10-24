@@ -86,6 +86,14 @@ namespace MobiFlight
                 Bytes = "115200";
                 C = "arduino";
             }
+            else if (MobiFlightModuleInfo.TYPE_ARDUINO_NANO == ArduinoType) // TODO dont understand
+            {
+                //:\Projekte\MobiFlightFC\FirmwareSource\arduino - 1.8.0\hardware\tools\avr / bin / avrdude - CD:\Projekte\MobiFlightFC\FirmwareSource\arduino - 1.8.0\hardware\tools\avr / etc / avrdude.conf - v - patmega328p - carduino - PCOM11 - b115200 - D - Uflash:w: C: \Users\SEBAST~1\AppData\Local\Temp\arduino_build_118832 / mobiflight_mega.ino.hex:i
+                FirmwareName = "mobiflight_uno_" + MobiFlightModuleInfo.LatestFirmwareUno.Replace('.', '_') + ".hex";
+                ArduinoChip = "atmega328p";
+                Bytes = "115200";
+                C = "arduino";
+            }
 
 
             if (!IsValidFirmwareFilepath(FirmwarePath + "\\" + FirmwareName))

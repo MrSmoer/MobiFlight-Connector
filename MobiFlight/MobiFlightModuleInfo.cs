@@ -62,6 +62,21 @@ namespace MobiFlight
         }
     }
 
+    public class NanoCapabilities : MobiFlightCapabilities
+    {
+        public NanoCapabilities()
+        {
+            MaxOutputs = 10;
+            MaxButtons = 16;
+            MaxLedSegments = 1;
+            MaxEncoders = 2;
+            MaxSteppers = 2;
+            MaxServos = 2;
+            MaxLcdI2C = 2;
+            MaxAnalogInputs = 2;
+        }
+    }
+
     public class MobiFlightPin
     {
         public byte Pin { get; set; }
@@ -104,16 +119,19 @@ namespace MobiFlight
         public const String LatestFirmwareMega = "1.11.3";
         public const String LatestFirmwareMicro = "1.11.3";
         public const String LatestFirmwareUno = "1.11.3";
+        public const String LatestFirmwareNano = "1.11.3";
 
         // these types are used for standard stock arduino boards
         public const String TYPE_ARDUINO_MICRO = "Arduino Micro Pro";
         public const String TYPE_ARDUINO_MEGA = "Arduino Mega 2560";
         public const String TYPE_ARDUINO_UNO = "Arduino Uno";
+        public const String TYPE_ARDUINO_NANO = "Arduino Nano";
 
         // these types are used once the MF firmware is installed
         public const String TYPE_MICRO = "MobiFlight Micro";
         public const String TYPE_MEGA = "MobiFlight Mega";
         public const String TYPE_UNO = "MobiFlight Uno";
+        public const String TYPE_NANO = "MobiFlight Nano";
 
         // message size is used for building
         // correct chunk sizes for messages
@@ -121,6 +139,7 @@ namespace MobiFlight
         public const int MESSAGE_MAX_SIZE_MICRO = 32;
         public const int MESSAGE_MAX_SIZE_UNO = 32;
         public const int MESSAGE_MAX_SIZE_MEGA = 64;
+        public const int MESSAGE_MAX_SIZE_NANO = 32;
 
         // this is used to check for 
         // maximum config length and
@@ -128,6 +147,7 @@ namespace MobiFlight
         public const int EEPROM_SIZE_MICRO = 256;
         public const int EEPROM_SIZE_UNO = 256;
         public const int EEPROM_SIZE_MEGA = 1024;
+        public const int EEPROM_SIZE_NANO = 256;
 
         // this is not yet used
         // available pins
@@ -284,6 +304,9 @@ namespace MobiFlight
             "VID_2341&PID_0242",
             "VID_10C4&PID_EA60"             // https://www.mobiflight.com/forum/message/20158.html
         };
+        public static readonly String[] VIDPID_NANO = {
+            "VID_1A86&PID_7523", // this is actually an CH-340 and can be a Mega OR an UNO
+        };
 
         String _version = "n/a";
         public String Type { get; set; }
@@ -300,7 +323,7 @@ namespace MobiFlight
 
         public bool HasMfFirmware()
         {
-            return (Type == TYPE_MICRO) || (Type == TYPE_MEGA) || (Type == TYPE_UNO);
+            return (Type == TYPE_MICRO) || (Type == TYPE_MEGA) || (Type == TYPE_UNO) || (Type == TYPE_NANO);
         }
 
         public void SetTypeByName(String FriendlyName)
@@ -317,6 +340,11 @@ namespace MobiFlight
             {
                 Name = TYPE_ARDUINO_MEGA;
                 Type = TYPE_ARDUINO_MEGA;
+            }
+            if (FriendlyName.Contains("Nano"))
+            {
+                Name = TYPE_ARDUINO_NANO;
+                Type = TYPE_ARDUINO_NANO;
             }
         }
 
@@ -340,13 +368,18 @@ namespace MobiFlight
                 Name = TYPE_ARDUINO_UNO;
                 Type = TYPE_ARDUINO_UNO;
             }
+            else if (VIDPID_NANO.Contains(VidPid))
+            {
+                Name = TYPE_ARDUINO_NANO;
+                Type = TYPE_ARDUINO_NANO;
+            }
         }
 
         public MobiFlightCapabilities GetCapabilities()
         {
-            MobiFlightCapabilities result = null;
-
-            switch(Type)
+            MobiFlightCapabilities result = new NanoCapabilities();
+            Console.WriteLine("Here");
+            switch (Type)
             {
                 case TYPE_MEGA:
                     result = new MegaCapabilities();
@@ -358,6 +391,11 @@ namespace MobiFlight
 
                 case TYPE_UNO:
                     result = new UnoCapabilities();
+                    break;
+                case TYPE_NANO:
+                    Console.WriteLine("Here");
+                    result = new NanoCapabilities();
+                    
                     break;
             }
 

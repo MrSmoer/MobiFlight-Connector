@@ -78,6 +78,10 @@ namespace MobiFlight.UI.Panels.Settings.Device
                     pin = MobiFlightModuleInfo.UNO_PINS.Find(x => (x.Pin == bPin));
                     result = pin.isPWM;
                     break;
+                case MobiFlightModuleInfo.TYPE_NANO:
+                    pin = MobiFlightModuleInfo.UNO_PINS.Find(x => (x.Pin == bPin)); //TODO too lazy
+                    result = pin.isPWM;
+                    break;
 
             }
             return result;

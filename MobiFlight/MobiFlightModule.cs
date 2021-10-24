@@ -121,6 +121,7 @@ namespace MobiFlight
                 if (Type == MobiFlightModuleInfo.TYPE_ARDUINO_MICRO || Type == MobiFlightModuleInfo.TYPE_MICRO) return MobiFlightModuleInfo.TYPE_ARDUINO_MICRO;
                 if (Type == MobiFlightModuleInfo.TYPE_ARDUINO_MEGA || Type == MobiFlightModuleInfo.TYPE_MEGA) return MobiFlightModuleInfo.TYPE_ARDUINO_MEGA;
                 if (Type == MobiFlightModuleInfo.TYPE_ARDUINO_UNO || Type == MobiFlightModuleInfo.TYPE_UNO) return MobiFlightModuleInfo.TYPE_ARDUINO_UNO;
+                if (Type == MobiFlightModuleInfo.TYPE_ARDUINO_NANO || Type == MobiFlightModuleInfo.TYPE_NANO) return MobiFlightModuleInfo.TYPE_ARDUINO_NANO;
                 return MobiFlightModuleInfo.TYPE_UNKNOWN;
                 } }
         public String Serial { get; set; }
@@ -731,6 +732,10 @@ namespace MobiFlight
                 {
                     MaxMessageSize = MobiFlightModuleInfo.MESSAGE_MAX_SIZE_MEGA;
                     EepromSize = MobiFlightModuleInfo.EEPROM_SIZE_MEGA;
+                } else if (ArduinoType == MobiFlightModuleInfo.TYPE_ARDUINO_NANO)
+                {
+                    MaxMessageSize = MobiFlightModuleInfo.MESSAGE_MAX_SIZE_NANO;
+                    EepromSize = MobiFlightModuleInfo.EEPROM_SIZE_NANO;
                 }
             }
             Log.Instance.log("MobiFlightModule.GetInfo: " + Type + ", " + Name + "," + Version + ", " + Serial, LogSeverity.Debug);
@@ -902,6 +907,8 @@ namespace MobiFlight
 
                 case MobiFlightModuleInfo.TYPE_UNO:
                     return MobiFlightModuleInfo.UNO_PINS.FindAll(x => x.isPWM == true);
+                case MobiFlightModuleInfo.TYPE_NANO:
+                    return MobiFlightModuleInfo.UNO_PINS.FindAll(x => x.isPWM == true); // TODO LAZY
 
                 default:
                     return MobiFlightModuleInfo.MEGA_PINS.FindAll(x => x.isPWM == true); ;
@@ -1053,6 +1060,10 @@ namespace MobiFlight
             else if (Type == MobiFlightModuleInfo.TYPE_UNO || Type == MobiFlightModuleInfo.TYPE_ARDUINO_UNO)
             {
                 Pins = MobiFlightModuleInfo.UNO_PINS;
+            }
+            else if (Type == MobiFlightModuleInfo.TYPE_NANO || Type == MobiFlightModuleInfo.TYPE_ARDUINO_NANO)
+            {
+                Pins = MobiFlightModuleInfo.UNO_PINS; //TODO lazy
             }
 
             List<MobiFlightPin> ResultPins = new List<MobiFlightPin>();

@@ -130,7 +130,8 @@ namespace MobiFlight
 
                 String[] arduinoVidPids = MobiFlightModuleInfo.VIDPID_MICRO
                                             .Concat(MobiFlightModuleInfo.VIDPID_MEGA)
-                                            .Concat(MobiFlightModuleInfo.VIDPID_UNO).ToArray();
+                                            .Concat(MobiFlightModuleInfo.VIDPID_UNO)
+                                            .Concat(MobiFlightModuleInfo.VIDPID_NANO).ToArray();
 
                 Regex regEx = new Regex("^(" + string.Join("|", arduinoVidPids) + ")");
 
@@ -167,6 +168,16 @@ namespace MobiFlight
                             }
                             continue;
                         }
+                        else if (FriendlyName.Contains("Nano"))
+                        {
+                            String portName = regUSB.OpenSubKey(regDevice).OpenSubKey(regSubDevice).OpenSubKey("Device Parameters").GetValue("PortName") as String;
+                            if (portName != null)
+                            {
+                                result.Add(new Tuple<string, string>(portName, MobiFlightModuleInfo.TYPE_ARDUINO_NANO));
+                                Log.Instance.log("Found potentially compatible module (Nano): " + regDevice + "@" + portName, LogSeverity.Debug);
+                            }
+                            continue;
+                        }
                         // determine type based on Vid Pid combination
                         else if (regEx.Match(regDevice).Success)
                         {
@@ -180,7 +191,7 @@ namespace MobiFlight
                                     String ArduinoType = MobiFlightModuleInfo.TYPE_ARDUINO_MEGA;
                                     if (MobiFlightModuleInfo.VIDPID_MICRO.Contains(VidPid)) ArduinoType = MobiFlightModuleInfo.TYPE_ARDUINO_MICRO;
                                     else if (MobiFlightModuleInfo.VIDPID_UNO.Contains(VidPid)) ArduinoType = MobiFlightModuleInfo.TYPE_ARDUINO_UNO;
-
+                                    else if (MobiFlightModuleInfo.VIDPID_NANO.Contains(VidPid)) ArduinoType = MobiFlightModuleInfo.TYPE_ARDUINO_NANO;
 
                                     if (result.Exists(x => x.Item1 == portName))
                                     {

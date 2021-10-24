@@ -320,6 +320,7 @@ namespace MobiFlight.UI
             {
                 if (module.Type == MobiFlightModuleInfo.TYPE_MEGA ||
                     module.Type == MobiFlightModuleInfo.TYPE_MICRO ||
+                    module.Type == MobiFlightModuleInfo.TYPE_NANO ||
                     module.Type == MobiFlightModuleInfo.TYPE_UNO
                     )
                 {
@@ -328,6 +329,8 @@ namespace MobiFlight.UI
                         latestVersion = new Version(MobiFlightModuleInfo.LatestFirmwareMicro);
                     if (module.Type == MobiFlightModuleInfo.TYPE_UNO)
                         latestVersion = new Version(MobiFlightModuleInfo.LatestFirmwareUno);
+                    if (module.Type == MobiFlightModuleInfo.TYPE_UNO)
+                        latestVersion = new Version(MobiFlightModuleInfo.LatestFirmwareNano);
 
                     Version currentVersion = new Version(module.Version != "n/a" ? module.Version : "0.0.0");
                     if (currentVersion.CompareTo(latestVersion) < 0)
@@ -342,7 +345,8 @@ namespace MobiFlight.UI
             {
                 if (moduleInfo.Type == MobiFlightModuleInfo.TYPE_ARDUINO_MEGA ||
                     moduleInfo.Type == MobiFlightModuleInfo.TYPE_ARDUINO_MICRO ||
-                    moduleInfo.Type == MobiFlightModuleInfo.TYPE_ARDUINO_UNO
+                    moduleInfo.Type == MobiFlightModuleInfo.TYPE_ARDUINO_UNO ||
+                    moduleInfo.Type == MobiFlightModuleInfo.TYPE_ARDUINO_NANO
                     )
                 {
                     modulesForFlashing.Add(moduleInfo);

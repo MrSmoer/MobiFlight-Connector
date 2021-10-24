@@ -108,6 +108,9 @@ namespace MobiFlight.UI.Panels.Settings
                             case MobiFlightModuleInfo.TYPE_ARDUINO_UNO:
                                 latestVersion = new Version(MobiFlightModuleInfo.LatestFirmwareUno);
                                 break;
+                            case MobiFlightModuleInfo.TYPE_ARDUINO_NANO:
+                                latestVersion = new Version(MobiFlightModuleInfo.LatestFirmwareNano);
+                                break;
                         }
                         Version currentVersion = new Version(module.Version != "n/a" && module.Version != "" ? module.Version : "0.0.0");
                         if (currentVersion.CompareTo(latestVersion) < 0)
@@ -206,7 +209,8 @@ namespace MobiFlight.UI.Panels.Settings
 
             bool isMobiFlightBoard = (parentNode.Tag as MobiFlightModule).Type != MobiFlightModuleInfo.TYPE_ARDUINO_MEGA
                                   && (parentNode.Tag as MobiFlightModule).Type != MobiFlightModuleInfo.TYPE_ARDUINO_MICRO
-                                  && (parentNode.Tag as MobiFlightModule).Type != MobiFlightModuleInfo.TYPE_ARDUINO_UNO;
+                                  && (parentNode.Tag as MobiFlightModule).Type != MobiFlightModuleInfo.TYPE_ARDUINO_UNO
+                                  && (parentNode.Tag as MobiFlightModule).Type != MobiFlightModuleInfo.TYPE_ARDUINO_NANO;
 
             mobiflightSettingsToolStrip.Enabled = isMobiFlightBoard;
             // this is the module node
