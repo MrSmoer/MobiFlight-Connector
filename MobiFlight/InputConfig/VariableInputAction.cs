@@ -77,9 +77,9 @@ namespace MobiFlight.InputConfig
                 {
                     Variable.Number = double.Parse(value);
                 }
-                catch (Exception)
+                catch (Exception e)
                 {
-
+                    Console.WriteLine(e.StackTrace);
 
                 }
             }

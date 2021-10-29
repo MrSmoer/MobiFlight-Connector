@@ -46,7 +46,8 @@ namespace MobiFlight.Config
             ClsPin = paramList[2];
             ClkPin = paramList[3];
             byte brightness = 15;
-            Byte.TryParse(paramList[4], out brightness);
+            if(!Byte.TryParse(paramList[4], out brightness))
+                throw new FormatException("ParsingFailed");
             Brightness = brightness;
             NumModules = paramList[5];
             Name = paramList[6];

@@ -42,7 +42,7 @@ namespace MobiFlight
             }
 
             RunAvrDude(Port, module.ArduinoType);
-            
+
             return true;
         }
 
@@ -66,33 +66,24 @@ namespace MobiFlight
         }
         */
 
-        public static void RunAvrDude(String Port, String ArduinoType) 
+        public static void RunAvrDude(String Port, String ArduinoType)
         {
-            String FirmwareName = "mobiflight_mega_" + MobiFlightModuleInfo.LatestFirmwareMega.Replace('.', '_') + ".hex"; 
+            String FirmwareName = "mobiflight_mega_" + new MegaConfig().LatestFirmware.Replace('.', '_') + ".hex";
             String ArduinoChip = "atmega2560";
-            String Bytes = "115200";
+            String BaudRate = "115200";
             String C = "wiring";
 
-            if (MobiFlightModuleInfo.TYPE_ARDUINO_MICRO == ArduinoType) {
-                FirmwareName = "mobiflight_micro_" + MobiFlightModuleInfo.LatestFirmwareMicro.Replace('.', '_') + ".hex";
-                ArduinoChip = "atmega32u4"; 
-                Bytes = "57600"; 
-                C = "avr109"; 
-            } else if (MobiFlightModuleInfo.TYPE_ARDUINO_UNO == ArduinoType)
+            BoardConfigProvider configProvider = new BoardConfigProvider();
+            List<MobiFlightBoardsConfig> boards = configProvider.GetBoardsConfigs();
+            foreach (MobiFlightBoardsConfig cfg in boards)
             {
-                //:\Projekte\MobiFlightFC\FirmwareSource\arduino - 1.8.0\hardware\tools\avr / bin / avrdude - CD:\Projekte\MobiFlightFC\FirmwareSource\arduino - 1.8.0\hardware\tools\avr / etc / avrdude.conf - v - patmega328p - carduino - PCOM11 - b115200 - D - Uflash:w: C: \Users\SEBAST~1\AppData\Local\Temp\arduino_build_118832 / mobiflight_mega.ino.hex:i
-                FirmwareName = "mobiflight_uno_" + MobiFlightModuleInfo.LatestFirmwareUno.Replace('.', '_') + ".hex";
-                ArduinoChip = "atmega328p";
-                Bytes = "115200";
-                C = "arduino";
-            }
-            else if (MobiFlightModuleInfo.TYPE_ARDUINO_NANO == ArduinoType) // TODO dont understand
-            {
-                //:\Projekte\MobiFlightFC\FirmwareSource\arduino - 1.8.0\hardware\tools\avr / bin / avrdude - CD:\Projekte\MobiFlightFC\FirmwareSource\arduino - 1.8.0\hardware\tools\avr / etc / avrdude.conf - v - patmega328p - carduino - PCOM11 - b115200 - D - Uflash:w: C: \Users\SEBAST~1\AppData\Local\Temp\arduino_build_118832 / mobiflight_mega.ino.hex:i
-                FirmwareName = "mobiflight_uno_" + MobiFlightModuleInfo.LatestFirmwareUno.Replace('.', '_') + ".hex";
-                ArduinoChip = "atmega328p";
-                Bytes = "115200";
-                C = "arduino";
+                if (cfg.TYPE_ARDUINO == ArduinoType)
+                {
+                    FirmwareName = cfg.FirmwarePrename + cfg.LatestFirmware.Replace('.', '_') + ".hex";
+                    ArduinoChip = cfg.ArduinoChip;
+                    BaudRate = cfg.BaudRate;
+                    C = cfg.C;
+                }
             }
 
 
@@ -109,7 +100,7 @@ namespace MobiFlight
             String FullAvrDudePath = ArduinoIdePath + "\\" + AvrPath;
 
             var proc1 = new ProcessStartInfo();
-            string anyCommand = "-C\"" + FullAvrDudePath + "\\etc\\avrdude.conf\"" + verboseLevel + " -p" + ArduinoChip + " -c"+ C +" -P\\\\.\\" + Port + " -b"+ Bytes +" -D -Uflash:w:\"" + FirmwarePath + "\\" + FirmwareName + "\":i";
+            string anyCommand = "-C\"" + FullAvrDudePath + "\\etc\\avrdude.conf\"" + verboseLevel + " -p" + ArduinoChip + " -c" + C + " -P\\\\.\\" + Port + " -b" + BaudRate + " -D -Uflash:w:\"" + FirmwarePath + "\\" + FirmwareName + "\":i";
             proc1.UseShellExecute = true;
             proc1.WorkingDirectory = "\"" + FullAvrDudePath + "\"";
             proc1.FileName = "\"" + FullAvrDudePath + "\\bin\\avrdude" + "\"";

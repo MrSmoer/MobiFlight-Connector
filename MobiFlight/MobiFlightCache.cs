@@ -42,7 +42,7 @@ namespace MobiFlight
         public event EventHandler LookupFinished;
 
 
-        private List<MobiFlightModuleInfo> connectedArduinoModules = null;
+        private List<MobiFlightBoardsConfig> connectedArduinoModules = null;
         Boolean isFirstTimeLookup = false;
 
         private bool _lookingUpModules = false;
@@ -79,7 +79,7 @@ namespace MobiFlight
         {
             if (connectedArduinoModules == null) return false;
 
-            foreach (MobiFlightModuleInfo info in connectedArduinoModules)
+            foreach (MobiFlightBoardsConfig info in connectedArduinoModules)
             {
                 if (info.Serial != m.Serial) continue;
 
@@ -90,10 +90,10 @@ namespace MobiFlight
             return true;
         }
 
-        public List<MobiFlightModuleInfo> GetDetectedArduinoModules()
+        public List<MobiFlightBoardsConfig> GetDetectedArduinoModules()
         {
             if (connectedArduinoModules == null)
-                    return new List<MobiFlightModuleInfo>();
+                    return new List<MobiFlightBoardsConfig>();
             return connectedArduinoModules;
         }
 
@@ -128,10 +128,21 @@ namespace MobiFlight
                 RegistryKey regUSB = regLocalMachine.OpenSubKey(regPath);
                 if (regUSB == null) continue;
 
-                String[] arduinoVidPids = MobiFlightModuleInfo.VIDPID_MICRO
+                
+
+                BoardConfigProvider configProvider = new BoardConfigProvider();
+                List<MobiFlightBoardsConfig> boards = configProvider.GetBoardsConfigs();
+
+                String[] arduinoVidPids = new String[boards.Count()];
+
+                foreach (MobiFlightBoardsConfig cfg in boards)
+                {
+                    arduinoVidPids = arduinoVidPids.Concat(cfg.VIDPID).ToArray();
+                }
+                 /*= MobiFlightModuleInfo.VIDPID_MICRO
                                             .Concat(MobiFlightModuleInfo.VIDPID_MEGA)
                                             .Concat(MobiFlightModuleInfo.VIDPID_UNO)
-                                            .Concat(MobiFlightModuleInfo.VIDPID_NANO).ToArray();
+                                            .Concat(MobiFlightModuleInfo.VIDPID_NANO).ToArray();*/
 
                 Regex regEx = new Regex("^(" + string.Join("|", arduinoVidPids) + ")");
 
@@ -147,71 +158,53 @@ namespace MobiFlight
                         String FriendlyName = regUSB.OpenSubKey(regDevice).OpenSubKey(regSubDevice).GetValue("FriendlyName") as String;
                         if (FriendlyName == null) continue;
 
+                        // TODO Talk about Uno not mentioned in https://github.com/MobiFlight/MobiFlight-Connector/blob/3df5cfe6123d9e74867433154e31498e9ecb8d47/MobiFlight/MobiFlightCache.cs#L144
                         // determine type based on names
-                        if (FriendlyName.Contains("Mega 2560"))
+                        foreach (MobiFlightBoardsConfig cfg in boards)
                         {
-                            String portName = regUSB.OpenSubKey(regDevice).OpenSubKey(regSubDevice).OpenSubKey("Device Parameters").GetValue("PortName") as String;
-                            if (portName != null)
+                            if (FriendlyName.Contains(cfg.friendlyNameIdentifier))
                             {
-                                result.Add(new Tuple<string, string>(portName, MobiFlightModuleInfo.TYPE_ARDUINO_MEGA));
-                                Log.Instance.log("Found potentially compatible module (Mega 2560): " + regDevice + "@" + portName, LogSeverity.Debug);
-                            }
-                            continue;
-                        }
-                        else if (FriendlyName.Contains("Pro Micro"))
-                        {
-                            String portName = regUSB.OpenSubKey(regDevice).OpenSubKey(regSubDevice).OpenSubKey("Device Parameters").GetValue("PortName") as String;
-                            if (portName != null)
-                            {
-                                result.Add(new Tuple<string, string>(portName, MobiFlightModuleInfo.TYPE_ARDUINO_MICRO));
-                                Log.Instance.log("Found potentially compatible module (Pro Micro): " + regDevice + "@" + portName, LogSeverity.Debug);
-                            }
-                            continue;
-                        }
-                        else if (FriendlyName.Contains("Nano"))
-                        {
-                            String portName = regUSB.OpenSubKey(regDevice).OpenSubKey(regSubDevice).OpenSubKey("Device Parameters").GetValue("PortName") as String;
-                            if (portName != null)
-                            {
-                                result.Add(new Tuple<string, string>(portName, MobiFlightModuleInfo.TYPE_ARDUINO_NANO));
-                                Log.Instance.log("Found potentially compatible module (Nano): " + regDevice + "@" + portName, LogSeverity.Debug);
-                            }
-                            continue;
-                        }
-                        // determine type based on Vid Pid combination
-                        else if (regEx.Match(regDevice).Success)
-                        {
-                            String VidPid = regEx.Match(regDevice).Value;
-                            try
-                            {
-                                //String val = regUSB.OpenSubKey(regDevice).OpenSubKey(regSubDevice).OpenSubKey("Control").GetValue("ActiveService") as String;
                                 String portName = regUSB.OpenSubKey(regDevice).OpenSubKey(regSubDevice).OpenSubKey("Device Parameters").GetValue("PortName") as String;
                                 if (portName != null)
                                 {
-                                    String ArduinoType = MobiFlightModuleInfo.TYPE_ARDUINO_MEGA;
-                                    if (MobiFlightModuleInfo.VIDPID_MICRO.Contains(VidPid)) ArduinoType = MobiFlightModuleInfo.TYPE_ARDUINO_MICRO;
-                                    else if (MobiFlightModuleInfo.VIDPID_UNO.Contains(VidPid)) ArduinoType = MobiFlightModuleInfo.TYPE_ARDUINO_UNO;
-                                    else if (MobiFlightModuleInfo.VIDPID_NANO.Contains(VidPid)) ArduinoType = MobiFlightModuleInfo.TYPE_ARDUINO_NANO;
+                                    result.Add(new Tuple<string, string>(portName, cfg.TYPE_ARDUINO));
+                                    Log.Instance.log("Found potentially compatible module ("+cfg.friendlyNameIdentifier+"): " + regDevice + "@" + portName, LogSeverity.Debug);
+                                }
+                                continue;
+                            }
+                            else if (regEx.Match(regDevice).Success)
+                            {
 
-                                    if (result.Exists(x => x.Item1 == portName))
+                                String VidPid = regEx.Match(regDevice).Value;
+                                try
+                                {
+                                    //String val = regUSB.OpenSubKey(regDevice).OpenSubKey(regSubDevice).OpenSubKey("Control").GetValue("ActiveService") as String;
+                                    String portName = regUSB.OpenSubKey(regDevice).OpenSubKey(regSubDevice).OpenSubKey("Device Parameters").GetValue("PortName") as String;
+                                    if (portName != null)
                                     {
-                                        Log.Instance.log("Duplicate Entry for Port: " + ArduinoType + " by VID/PID: " + VidPid + "@" + portName, LogSeverity.Debug);
+                                        String ArduinoType = MobiFlightBoardsConfig.TYPE_UNKNOWN;
+                                        if (cfg.VIDPID.Contains(VidPid)) ArduinoType = cfg.TYPE_ARDUINO;
+
+                                        if (result.Exists(x => x.Item1 == portName))
+                                        {
+                                            Log.Instance.log("Duplicate Entry for Port: " + ArduinoType + " by VID/PID: " + VidPid + "@" + portName, LogSeverity.Debug);
+                                            continue;
+                                        }
+
+                                        result.Add(new Tuple<string, string>(portName, ArduinoType));
+                                        Log.Instance.log("Found potentially compatible module (" + ArduinoType + " by VID/PID): " + VidPid + "@" + portName, LogSeverity.Debug);
                                         continue;
                                     }
-
-                                    result.Add(new Tuple<string, string>(portName, ArduinoType));
-                                    Log.Instance.log("Found potentially compatible module (" + ArduinoType + " by VID/PID): " + VidPid + "@" + portName, LogSeverity.Debug);
-                                    continue;
                                 }
-                            }
-                            catch (Exception e)
-                            {
-                            }
+                                catch (Exception e)
+                                {
+                                    Console.WriteLine(e.StackTrace);
+                                }
 
-                            message = "Arduino device has no port information: " + regDevice;
+                                message = "Arduino device has no port information: " + regDevice;
+                            }
+                            message = "Incompatible module skipped: " + FriendlyName + " - VID/PID: " + regDevice;
                         }
-
-                        message = "Incompatible module skipped: " + FriendlyName + " - VID/PID: " + regDevice;
                     }
 
                     if (message != null)
@@ -229,16 +222,16 @@ namespace MobiFlight
             return result;
         }
 
-        private async  Task<List<MobiFlightModuleInfo>> LookupAllConnectedArduinoModulesAsync()
+        private async  Task<List<MobiFlightBoardsConfig>> LookupAllConnectedArduinoModulesAsync()
         {
             Log.Instance.log("MobiFlightCache.LookupAllConnectedArduinoModulesAsync: Start", LogSeverity.Debug);
-            List<MobiFlightModuleInfo> result = new List<MobiFlightModuleInfo>();
+            List<MobiFlightBoardsConfig> result = new List<MobiFlightBoardsConfig>();
             string[] connectedPorts = SerialPort.GetPortNames();
 
             if (_lookingUpModules) return result;
             _lookingUpModules = true;
             
-            List<Task<MobiFlightModuleInfo>> tasks = new List<Task<MobiFlightModuleInfo>>();
+            List<Task<MobiFlightBoardsConfig>> tasks = new List<Task<MobiFlightBoardsConfig>>();
             List<Tuple<string, string>> arduinoPorts = getArduinoPorts();
             List<string> connectingPorts = new List<string>();
             
@@ -267,19 +260,20 @@ namespace MobiFlight
                     MobiFlightModule tmp = new MobiFlightModule(new MobiFlightModuleConfig() { ComPort = portName, Type = ArduinoType });
                     ModuleConnecting?.Invoke(this, "Scanning Arduinos", progressValue);
                     tmp.Connect();
-                    MobiFlightModuleInfo devInfo = tmp.GetInfo() as MobiFlightModuleInfo;
+                    MobiFlightBoardsConfig devInfo = tmp.GetInfo() as MobiFlightBoardsConfig;
 
                     tmp.Disconnect();
                     ModuleConnecting?.Invoke(this, "Scanning Arduinos", progressValue + 5);
-
-                    if (devInfo.Type == MobiFlightModuleInfo.TYPE_UNKNOWN)
+                    // TODO
+                    BoardConfigProvider tempProvider = new BoardConfigProvider();
+                    if (devInfo.Type == MobiFlightBoardsConfig.TYPE_UNKNOWN)
                     {
-                        devInfo.SetTypeByName(item.Item2);
+                        devInfo = tempProvider.GetBoardConfigByName(item.Item2);
                     }
 
-                    if (devInfo.Type == MobiFlightModuleInfo.TYPE_UNKNOWN)
+                    if (devInfo.Type == MobiFlightBoardsConfig.TYPE_UNKNOWN)
                     {
-                        devInfo.SetTypeByVidPid(item.Item2);
+                        devInfo = tempProvider.GetBoardConfigByVidPi(item.Item2);
                     }
                     result.Add(devInfo);
 
@@ -310,9 +304,9 @@ namespace MobiFlight
             Log.Instance.log("MobiFlightCache.connect: Clearing modules",LogSeverity.Debug);
             Modules.Clear();
 
-            foreach (MobiFlightModuleInfo devInfo in connectedArduinoModules)
+            foreach (MobiFlightBoardsConfig devInfo in connectedArduinoModules)
             {
-                if (!devInfo.HasMfFirmware()) continue;
+                if (!devInfo.HasSuitingMfFirmware()) continue;
 
                 MobiFlightModule m = new MobiFlightModule(new MobiFlightModuleConfig() {
                     ComPort = devInfo.Port,
@@ -355,7 +349,7 @@ namespace MobiFlight
             return false;
         }
 
-        private void RegisterModule(MobiFlightModule m, MobiFlightModuleInfo devInfo, bool replace = false)
+        private void RegisterModule(MobiFlightModule m, MobiFlightBoardsConfig devInfo, bool replace = false)
         {
             Log.Instance.log("MobiFlightCache.RegisterModule("+m.Name+":"+ m.Port +")", LogSeverity.Debug);
             m.OnInputDeviceAction += new MobiFlightModule.InputDeviceEventHandler(module_OnButtonPressed);
@@ -445,6 +439,7 @@ namespace MobiFlight
             {
                 // do nothing
                 // maybe log this some time in the future
+                Console.WriteLine(e.StackTrace);
             }
             catch (Exception e)
             {
@@ -683,9 +678,9 @@ namespace MobiFlight
         public IEnumerable<IModuleInfo> getModuleInfo()
         {
             List<IModuleInfo> result = new List<IModuleInfo>();
-            foreach (MobiFlightModuleInfo moduleInfo in GetDetectedArduinoModules())
+            foreach (MobiFlightBoardsConfig moduleInfo in GetDetectedArduinoModules())
             {
-                if (moduleInfo.HasMfFirmware())
+                if (moduleInfo.HasSuitingMfFirmware())
                     result.Add(moduleInfo);
             }
 
@@ -704,16 +699,16 @@ namespace MobiFlight
 
         public MobiFlightModule RefreshModule(MobiFlightModule module)
         {
-            MobiFlightModuleInfo oldDevInfo = connectedArduinoModules.Find(delegate(MobiFlightModuleInfo devInfo)
+            MobiFlightBoardsConfig oldDevInfo = connectedArduinoModules.Find(delegate(MobiFlightBoardsConfig devInfo)
             {
                 return devInfo.Port == module.Port;
             }
             );
 
             if (oldDevInfo != null) connectedArduinoModules.Remove(oldDevInfo);
-            connectedArduinoModules.Add(module.ToMobiFlightModuleInfo());
+            connectedArduinoModules.Add(module.ToMobiFlightBoardsConfig(module));
 
-            RegisterModule(module, module.ToMobiFlightModuleInfo(), true);
+            RegisterModule(module, module.ToMobiFlightBoardsConfig(module), true);
 
             return module;
         }
@@ -725,7 +720,7 @@ namespace MobiFlight
             throw new IndexOutOfRangeException();
         }
 
-        internal MobiFlightModule GetModule(MobiFlightModuleInfo moduleInfo)
+        internal MobiFlightModule GetModule(MobiFlightBoardsConfig moduleInfo)
         {
             foreach (MobiFlightModule module in Modules.Values)
             {

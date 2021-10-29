@@ -28,7 +28,7 @@ namespace MobiFlight.UI.Dialogs
             get { return mobiFlightPanel.modulesForUpdate; } 
             set { mobiFlightPanel.modulesForUpdate = value; }
         }
-        public List<MobiFlightModuleInfo> MobiFlightModulesForFlashing
+        public List<MobiFlightBoardsConfig> MobiFlightModulesForFlashing
         {
             get { return mobiFlightPanel.modulesForFlashing; }
             set { mobiFlightPanel.modulesForFlashing = value; }

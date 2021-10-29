@@ -511,6 +511,7 @@ namespace MobiFlight
                         catch (FormatException e)
                         {
                             Log.Instance.log("checkPrecondition : Exception on comparison execution, wrong format", LogSeverity.Error);
+                            Console.WriteLine(e.StackTrace);
                             // maybe it is a text string
                             // @todo do something in the future here
                         }
@@ -554,6 +555,7 @@ namespace MobiFlight
                                 {
                                     //argh!
                                     Log.Instance.log("checkPrecondition : Exception on eval of comparison value", LogSeverity.Error);
+                                    
                                 }
                             }
 

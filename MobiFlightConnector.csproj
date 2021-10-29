@@ -197,6 +197,11 @@
     <Compile Include="Base\SerialNumber.cs" />
     <Compile Include="Base\AppTelemetry.cs" />
     <Compile Include="Base\WriteCacheInterface.cs" />
+    <Compile Include="MobiFlight\Boards\UnoConfig.cs" />
+    <Compile Include="MobiFlight\Boards\MicroConfig.cs" />
+    <Compile Include="MobiFlight\Boards\NanoConfig.cs" />
+    <Compile Include="MobiFlight\MobiFlightBoardsConfig.cs" />
+    <Compile Include="MobiFlight\Boards\MegaConfig.cs" />
     <Compile Include="MobiFlight\Config\ShiftRegister.cs" />
     <Compile Include="MobiFlight\Config\IConfigRefConfigItem.cs" />
     <Compile Include="MobiFlight\Config\AnalogInput.cs" />
@@ -491,7 +496,6 @@
     <Compile Include="MobiFlight\MobiFlightOutput.cs" />
     <Compile Include="MobiFlight\MobiFlightServo.cs" />
     <Compile Include="MobiFlight\MobiFlightCache.cs" />
-    <Compile Include="MobiFlight\MobiFlightModuleInfo.cs" />
     <Compile Include="MobiFlight\MobiFlightIOBasic.cs" />
     <Compile Include="MobiFlight\MobiFlightLedModule.cs" />
     <Compile Include="MobiFlight\MobiFlightModule.cs" />
