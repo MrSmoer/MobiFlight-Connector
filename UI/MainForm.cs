@@ -108,6 +108,7 @@ namespace MobiFlight.UI
             panelMain.Visible = false;
             startupPanel.Visible = true;
             menuStrip.Enabled = false;
+            toolStrip1.Enabled = false;
         }
 
         private void MainForm_Shown(object sender, EventArgs e)
@@ -162,8 +163,8 @@ namespace MobiFlight.UI
             // on the program
             setAutoRunValue(Properties.Settings.Default.AutoRun);
 
-            runToolStripButton.Enabled = RunIsAvailable();
-            runTestToolStripButton.Enabled = TestRunIsAvailable();
+            runToolStripButton.Enabled = false;
+            runTestToolStripButton.Enabled = false;
             settingsToolStripButton.Enabled = false;
             updateNotifyContextMenu(false);
 
@@ -291,8 +292,13 @@ namespace MobiFlight.UI
             startupPanel.UpdateProgressBar(100);
             panelMain.Visible = true;
             startupPanel.Visible = false;
+
             menuStrip.Enabled = true;
+            toolStrip1.Enabled = true;
+
             settingsToolStripButton.Enabled = true;
+            runToolStripButton.Enabled = RunIsAvailable();
+            runTestToolStripButton.Enabled = TestRunIsAvailable();
 
             AutoUpdateChecker.CheckForUpdate(false, true);
 
@@ -419,7 +425,17 @@ namespace MobiFlight.UI
         {
             if (Properties.Settings.Default.UpgradeRequired)
             {
-                Properties.Settings.Default.Upgrade();
+                try
+                {
+                    Properties.Settings.Default.Upgrade();
+                }
+                catch
+                {
+                    // If the properties file is corrupted for some reason catch the exception and
+                    // reset back to a default version.
+
+                    Properties.Settings.Default.Reset();
+                }
                 Properties.Settings.Default.UpgradeRequired = false;
                 Properties.Settings.Default.StartedTotal += Properties.Settings.Default.Started;
                 Properties.Settings.Default.Started = 0;
@@ -783,7 +799,7 @@ namespace MobiFlight.UI
 
         private bool TestRunIsAvailable()
         {
-            return execManager.ModulesConnected() && !execManager.TestModeIsStarted();
+            return execManager.ModulesConnected() && !execManager.TestModeIsStarted() && !execManager.IsStarted();
         }
 
         /// <summary>
