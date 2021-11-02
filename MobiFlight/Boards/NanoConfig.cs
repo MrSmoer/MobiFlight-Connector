@@ -57,6 +57,9 @@ namespace MobiFlight
                 { new MobiFlightPin() { Pin = 17, isAnalog = true, Name = "A3" } },
                 { new MobiFlightPin() { Pin = 18, isAnalog = true, Name = "A4", isI2C = true } },
                 { new MobiFlightPin() { Pin = 19, isAnalog = true, Name = "A5", isI2C = true } },
+                // 20-21
+                { new MobiFlightPin() { Pin = 20, isAnalog = true, Name = "A6" } },
+                { new MobiFlightPin() { Pin = 21, isAnalog = true, Name = "A7" } },
             };
 
             VIDPID = new String[] {
